@@ -1,0 +1,52 @@
+name: crawler-visibility audit
+description: Audit built pages (or live URLs) the way crawlers that don't run JavaScript see them, and post a Markdown report to the job summary.
+branding: { icon: eye, color: blue }
+inputs:
+  target:
+    description: "Directory of built HTML (e.g. dist), a file, or one or more space-separated URLs"
+    required: true
+  grade:
+    description: "'true' to grade live URLs A-F (fetches robots.txt and sitemap.xml)"
+    default: "false"
+  fail-below:
+    description: "With grade: fail the step when any grade is below this letter (A-F)"
+    default: "F"
+  min:
+    description: "Minimum body characters per page (audit mode)"
+    default: "200"
+  args:
+    description: "Extra cv-audit flags, space separated (e.g. --allow-noindex). Not evaluated by a shell."
+    default: ""
+outputs:
+  report:
+    description: Path of the Markdown report file
+    value: ${{ steps.run.outputs.report }}
+runs:
+  using: composite
+  steps:
+    - name: Build crawler-visibility
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --no-audit --no-fund --loglevel=error && npm run build --silent
+    - id: run
+      name: Run cv-audit
+      shell: bash
+      env:
+        CV_TARGET: ${{ inputs.target }}
+        CV_GRADE: ${{ inputs.grade }}
+        CV_FAIL_BELOW: ${{ inputs.fail-below }}
+        CV_MIN: ${{ inputs.min }}
+        CV_ARGS: ${{ inputs.args }}
+        CV_BIN: ${{ github.action_path }}/bin/cv-audit.mjs
+      run: |
+        set +e
+        read -r -a targets <<< "$CV_TARGET"
+        read -r -a extra <<< "$CV_ARGS"
+        args=("${targets[@]}" --markdown "${extra[@]}")
+        if [ "$CV_GRADE" = "true" ]; then args+=(--grade --fail-below "$CV_FAIL_BELOW"); else args+=(--min "$CV_MIN"); fi
+        report="$RUNNER_TEMP/cv-audit.md"
+        node "$CV_BIN" "${args[@]}" > "$report"
+        rc=$?
+        cat "$report" >> "$GITHUB_STEP_SUMMARY"
+        echo "report=$report" >> "$GITHUB_OUTPUT"
+        exit $rc
