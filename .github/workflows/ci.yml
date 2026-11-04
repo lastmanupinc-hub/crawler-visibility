@@ -1,0 +1,38 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy: { matrix: { node: [20, 22] } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ matrix.node }}", cache: npm }
+      - run: npm ci
+      - run: npm test
+      - run: npm pack --dry-run
+  e2e:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci && npm run build && npm pack
+      - run: bash scripts/e2e.sh
+  action:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p fixture/ok
+          printf '<!doctype html><html><head><title>t</title><meta name="description" content="d"><link rel="canonical" href="https://a.example/"><script type="application/ld+json">{"@type":"WebSite"}</script></head><body><h1>Fixture</h1><p>%s</p><a href="/">home</a></body></html>' "$(printf 'readable text %.0s' $(seq 30))" > fixture/ok/index.html
+      - id: cv
+        uses: ./
+        with: { target: fixture/ok }
+      - run: grep -q "1/1 pages readable" "${{ steps.cv.outputs.report }}"
