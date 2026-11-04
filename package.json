@@ -1,0 +1,80 @@
+{
+  "name": "crawler-visibility",
+  "version": "0.4.0",
+  "description": "See your Vite app the way non-JavaScript crawlers (GPTBot, ClaudeBot, PerplexityBot) see it: per-route head tags, a JSON-LD entity graph, and a raw-HTML audit that fails your build when a page ships empty.",
+  "keywords": [
+    "seo",
+    "json-ld",
+    "structured-data",
+    "schema-org",
+    "prerender",
+    "vite-plugin",
+    "crawlability",
+    "open-graph",
+    "spa",
+    "ai-crawlers",
+    "gptbot",
+    "claudebot",
+    "llm-seo"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "author": "Jonathan Arvay <jonathan@jonathanarvay.com> (https://jonathanarvay.com/about)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lastmanupinc-hub/crawler-visibility.git"
+  },
+  "homepage": "https://github.com/lastmanupinc-hub/crawler-visibility#readme",
+  "bugs": "https://github.com/lastmanupinc-hub/crawler-visibility/issues",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "default": "./dist/vite.js"
+    }
+  },
+  "bin": {
+    "cv-audit": "./bin/cv-audit.mjs",
+    "cv-prerender": "./bin/cv-prerender.mjs",
+    "cv-robots": "./bin/cv-robots.mjs",
+    "cv-sitemap": "./bin/cv-sitemap.mjs"
+  },
+  "files": [
+    "action.yml",
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE",
+    "NOTICE.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm test"
+  },
+  "peerDependencies": {
+    "vite": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "private": true
+}
